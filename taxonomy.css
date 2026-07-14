@@ -1,0 +1,12 @@
+.taxonomy-page{background:var(--cream)}
+.taxonomy-header{height:90px;padding:0 max(6vw,30px);display:flex;align-items:center;justify-content:space-between;color:white;background:var(--wine)}
+.taxonomy-header>a:last-child{font-size:12px;text-decoration:none}.taxonomy-hero{padding:90px max(6vw,30px);color:white;background:linear-gradient(125deg,var(--ink),var(--wine))}
+.taxonomy-hero h1{margin:0;font:600 clamp(65px,9vw,120px)/.8 var(--display);letter-spacing:-.05em}.taxonomy-hero h1 em{color:var(--gold)}
+.taxonomy-hero>p:last-child{max-width:540px;margin:35px 0 0;color:rgba(255,255,255,.65);line-height:1.7}.taxonomy-content{padding:70px max(6vw,30px) 110px}
+.taxonomy-note{display:grid;grid-template-columns:1fr 3fr;gap:25px;margin-bottom:35px;padding:25px;background:white;border-left:3px solid var(--red)}.taxonomy-note p{margin:0;color:var(--muted)}
+code{padding:2px 7px;color:var(--red);background:var(--cream)}.taxonomy-toolbar{display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
+.taxonomy-explanation{max-width:850px;margin:25px 0;color:var(--muted);font-size:12px;line-height:1.65}.taxonomy-table-wrap{overflow-x:auto;background:white;border:1px solid var(--line)}
+.taxonomy-table{width:100%;border-collapse:collapse}.taxonomy-table th,.taxonomy-table td{padding:17px 20px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.taxonomy-table th{color:var(--muted);font-size:10px;letter-spacing:.1em;text-transform:uppercase}.taxonomy-table td:first-child{width:110px;color:var(--red);font-weight:600}
+.taxonomy-table td:nth-child(2){width:52%;font-size:14px}.topic-tags{display:flex;flex-wrap:wrap;gap:5px}.topic-tag{padding:5px 7px;color:var(--wine);background:var(--cream);font-size:10px}
+@media(max-width:640px){.taxonomy-header{padding:0 20px}.taxonomy-hero{padding:65px 20px}.taxonomy-content{padding:50px 20px}.taxonomy-note{grid-template-columns:1fr}.taxonomy-toolbar{grid-template-columns:1fr}.taxonomy-table th,.taxonomy-table td{padding:13px 11px}.taxonomy-table td:nth-child(2){min-width:280px}}

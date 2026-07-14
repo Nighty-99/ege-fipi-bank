@@ -1,0 +1,23 @@
+<!-- Вставьте код в блок T123 «HTML-код» на Tilda.
+     Дважды замените YOUR_GITHUB_USERNAME и YOUR_REPOSITORY. -->
+<div id="infinita-bank-wrap" style="width:100%;overflow:hidden">
+  <iframe
+    id="infinita-bank-frame"
+    src="https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY/?embed=1"
+    title="Банк заданий ЕГЭ Infinita"
+    loading="lazy"
+    style="display:block;width:100%;height:1200px;border:0"
+    allow="clipboard-write"
+  ></iframe>
+</div>
+<script>
+(function () {
+  var frame = document.getElementById('infinita-bank-frame');
+  window.addEventListener('message', function (event) {
+    if (event.origin !== 'https://YOUR_GITHUB_USERNAME.github.io') return;
+    if (event.data && event.data.type === 'infinita-bank-height') {
+      frame.style.height = Math.max(700, Number(event.data.height) || 0) + 'px';
+    }
+  });
+}());
+</script>

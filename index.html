@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Банк заданий ЕГЭ по профильной математике от Infinita">
+  <title>Банк заданий ЕГЭ — Infinita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="https://infinita-school.ru/" aria-label="На главную Infinita">
+      <span class="brand-mark">∞</span><span class="brand-name">Infinita</span>
+    </a>
+    <nav class="header-nav" aria-label="Основная навигация">
+      <a href="#topics">Темы</a>
+      <a href="taxonomy.html">Коды КЭС</a>
+      <button class="text-button" data-open-variant>Собрать вариант</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-orbit" aria-hidden="true"></div>
+      <p class="eyebrow">Профильная математика · ЕГЭ</p>
+      <h1>Практика без<br><em>хаоса</em></h1>
+      <p class="hero-lead">Задания открытого банка ФИПИ — аккуратно разложены по 12 темам экзамена и подробным подтемам.</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#topics">Выбрать тему <span>↘</span></a>
+        <button class="button button-secondary" data-open-variant>Собрать вариант</button>
+      </div>
+      <div class="hero-stat"><strong>19</strong><span>позиций экзамена</span></div>
+    </section>
+
+    <section class="topics-section" id="topics">
+      <div class="section-heading">
+        <div><p class="eyebrow">Навигация по банку</p><h2>Выберите задание</h2></div>
+        <p>Каждое задание снабжено официальным кодом КЭС — используйте его как фильтр по подтеме.<br><a class="inline-link" href="taxonomy.html">Открыть справочник кодов →</a></p>
+      </div>
+      <div class="topic-grid" id="topicGrid" aria-label="Темы ЕГЭ"></div>
+    </section>
+
+    <section class="bank-section" id="bank">
+      <div class="bank-heading">
+        <div>
+          <p class="eyebrow">Открытый банк</p>
+          <h2 id="activeTopicTitle">Планиметрия</h2>
+          <p id="activeTopicDescription">Фигуры на плоскости</p>
+        </div>
+        <button class="button button-primary compact" data-open-variant>+ Новый вариант</button>
+      </div>
+      <div class="filters">
+        <label class="search-field"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Поиск по номеру или условию" autocomplete="off"></label>
+        <label class="select-field"><span class="sr-only">Подтема</span><select id="subtopicSelect"><option value="">Все подтемы</option></select></label>
+      </div>
+      <div class="result-bar"><span id="resultCount">Загружаем задания…</span><span class="live-dot">данные ФИПИ</span></div>
+      <div class="task-list" id="taskList" aria-live="polite"></div>
+      <button class="button load-more" id="loadMore" hidden>Показать ещё</button>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand footer-brand"><span class="brand-mark">∞</span><span class="brand-name">Infinita</span></div>
+    <p>Материалы заданий получены из открытого банка ФГБНУ «ФИПИ». Infinita не является официальным ресурсом ФИПИ.</p>
+    <a href="https://ege.fipi.ru/bank/index.php?proj=AC437B34557F88EA4115D2F374B0A07B" target="_blank" rel="noopener">Открыть первоисточник ↗</a>
+  </footer>
+
+  <dialog class="variant-dialog" id="variantDialog">
+    <form method="dialog" class="dialog-card" id="variantForm">
+      <div class="dialog-head"><div><p class="eyebrow">Конструктор</p><h2>Случайный вариант</h2></div><button class="close-button" value="cancel" aria-label="Закрыть">×</button></div>
+      <p class="dialog-intro">Укажите, сколько заданий взять из каждой темы. Ноль — пропустить тему.</p>
+      <div class="variant-counts" id="variantCounts"></div>
+      <div class="variant-total"><span>Всего заданий</span><strong id="variantTotal">12</strong></div>
+      <button class="button button-primary wide" id="generateVariant" value="none">Собрать случайный вариант</button>
+    </form>
+  </dialog>
+
+  <dialog class="variant-results" id="variantResults">
+    <div class="results-card">
+      <div class="dialog-head"><div><p class="eyebrow">Готово</p><h2>Ваш вариант</h2></div><button class="close-button" data-close-results aria-label="Закрыть">×</button></div>
+      <div class="export-actions"><button class="button button-primary" id="downloadHtml">Скачать HTML</button><button class="button print-button" id="printVariant">Печать / PDF</button></div>
+      <div id="variantWarnings"></div><div id="variantTaskList"></div>
+    </div>
+  </dialog>
+
+  <template id="taskTemplate">
+    <article class="task-card">
+      <div class="task-meta"><span class="task-number"></span><button class="info-chip" type="button" aria-expanded="false">i <span>Подтема</span></button></div>
+      <div class="task-info" hidden></div>
+      <div class="task-content"></div>
+      <form class="answer-form">
+        <label><span>Ваш ответ</span><input name="answer" inputmode="decimal" autocomplete="off" placeholder="Введите ответ"></label>
+        <button class="button check-button" type="submit">Проверить</button>
+        <output class="answer-status" aria-live="polite"></output>
+      </form>
+      <div class="source-line"><span>Источник: открытый банк заданий ФИПИ</span><a target="_blank" rel="noopener">Первоисточник ↗</a></div>
+    </article>
+  </template>
+  <script src="app.js" defer></script>
+</body>
+</html>

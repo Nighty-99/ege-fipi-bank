@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Справочник кодов КЭС — Infinita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="taxonomy.css">
+</head>
+<body class="taxonomy-page">
+  <header class="taxonomy-header"><a class="brand" href="index.html"><span class="brand-mark">∞</span><span class="brand-name">Infinita</span></a><a href="index.html">← Вернуться в банк</a></header>
+  <main>
+    <section class="taxonomy-hero"><p class="eyebrow">Справочник</p><h1>Коды подтем<br><em>КЭС</em></h1><p>Официальная кодировка ФИПИ и её соответствие 19 позициям банка Infinita.</p></section>
+    <section class="taxonomy-content">
+      <div class="taxonomy-note"><strong>Как читать код</strong><p>Первая цифра обозначает крупный раздел содержания, вторая — конкретную подтему. Например, <code>7.5</code> — «Координаты и векторы».</p></div>
+      <div class="taxonomy-toolbar"><label class="search-field"><span>⌕</span><input id="taxonomySearch" type="search" placeholder="Найти код или название"></label><label class="select-field"><select id="taxonomyTopic"><option value="">Все 19 заданий ЕГЭ</option></select></label></div>
+      <p class="taxonomy-explanation">Некоторые КЭС встречаются сразу в нескольких экзаменационных типах. В таких случаях финальная тема уточняется по формулировке задания: например, по одному коду вероятности различаются простые и сложные задачи.</p>
+      <div class="taxonomy-table-wrap"><table class="taxonomy-table"><thead><tr><th>Код КЭС</th><th>Официальная подтема ФИПИ</th><th>Используется в темах Infinita</th></tr></thead><tbody id="taxonomyBody"><tr><td colspan="3">Загружаем справочник ФИПИ…</td></tr></tbody></table></div>
+    </section>
+  </main>
+  <footer><div class="brand footer-brand"><span class="brand-mark">∞</span><span class="brand-name">Infinita</span></div><p>Названия и коды КЭС получены из открытого банка ФГБНУ «ФИПИ».</p><a href="index.html">Перейти к заданиям →</a></footer>
+  <script src="taxonomy.js" defer></script>
+</body></html>
