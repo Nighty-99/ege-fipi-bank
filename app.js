@@ -1,10 +1,12 @@
+const DATA_VERSION = "2026-07-15-inline-formulas-v2";
 const state = { topics: [], tasks: [], activeTopic: 1, page: 1, pageSize: 8, total: 0, loading: false, searchTimer: null, variantGroups: [] };
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 async function getJson(path) {
-  const response = await fetch(path);
+  const separator = path.includes("?") ? "&" : "?";
+  const response = await fetch(`${path}${separator}v=${DATA_VERSION}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`Не удалось загрузить ${path}`);
   return response.json();
 }
