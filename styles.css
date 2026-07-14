@@ -100,7 +100,21 @@ h2 { margin: 0; font: 600 clamp(48px, 6vw, 82px)/.95 var(--display); letter-spac
 .task-content p { margin: 0 0 12px; }
 .task-content table { max-width: 100% !important; background: transparent !important; border: 0 !important; }
 .task-content td { background: transparent !important; }
-.task-content img, .task-image { display: block; max-width: 100%; height: auto; margin: 18px auto; }
+.task-content img { max-width: 100%; height: auto; }
+.task-content img.fipi-inline-image {
+  display: inline-block;
+  width: auto;
+  max-width: min(100%, 16em);
+  margin: 0 .12em;
+  vertical-align: -.35em;
+}
+.task-content img.fipi-block-image,
+.task-content img.task-image:not(.fipi-inline-image) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 18px auto;
+}
 .answer-form { margin-top: 30px; display: grid; grid-template-columns: minmax(200px, 340px) auto 1fr; align-items: end; gap: 10px; }
 .answer-form label span { display: block; margin-bottom: 8px; color: var(--muted); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
 .answer-form input { width: 100%; height: 50px; padding: 0 16px; border: 1px solid var(--line); outline: 0; }
