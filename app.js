@@ -1,5 +1,17 @@
-const DATA_VERSION = "2026-07-15-inline-formulas-v2";
-const state = { topics: [], tasks: [], activeTopic: 1, page: 1, pageSize: 8, total: 0, loading: false, searchTimer: null, variantGroups: [] };
+const DATA_VERSION = "2026-07-15-inline-formulas-v3";
+const state = {
+  topics: [],
+  tasks: [],
+  activeTopic: 1,
+  page: 1,
+  pageSize: 8,
+  total: 0,
+  loading: false,
+  searchTimer: null,
+  variantGroups: [],
+  topicOrders: {},
+  manualVariantIds: new Set(),
+};
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -44,6 +56,15 @@ function makeTaskCard(task, sequence = null) {
     const panel = $(".task-info", card); panel.hidden = !panel.hidden;
     info.setAttribute("aria-expanded", String(!panel.hidden));
   });
+  if (!sequence) {
+    const pick = document.createElement("button");
+    pick.type = "button";
+    pick.className = "manual-pick";
+    pick.dataset.taskGuid = task.guid;
+    pick.addEventListener("click", () => toggleManualVariantTask(task.guid));
+    $(".task-meta", card).append(pick);
+    updatePickButton(pick);
+  }
   const form = $(".answer-form", card);
   if (!task.has_short_answer) {
     form.classList.add("detailed-answer-note");
@@ -78,7 +99,7 @@ async function loadTasks(append = false) {
   try {
     const search = $("#searchInput").value.trim().toLocaleLowerCase("ru");
     const subtopic = $("#subtopicSelect").value;
-    const pool = state.tasks.filter(task => task.topic_id === state.activeTopic);
+    const pool = orderedTopicPool(state.activeTopic);
     const filtered = pool.filter(task => (!search || `${task.number} ${task.subtopic} ${plainText(task.prompt)}`.toLocaleLowerCase("ru").includes(search)) && (!subtopic || task.subtopic === subtopic));
     const start = (state.page - 1) * state.pageSize;
     const data = { items: filtered.slice(start, start + state.pageSize), total: filtered.length, subtopics: [...new Set(pool.map(task => task.subtopic))].sort() };
@@ -155,6 +176,51 @@ async function inlinePromptImages(value) {
   return wrapper.innerHTML;
 }
 function normalizeAnswer(value) { return String(value).trim().toLocaleLowerCase("ru").replaceAll("−", "-").replaceAll(",", ".").replace(/\s+/g, ""); }
+function shuffled(items) { return [...items].sort(() => Math.random() - .5); }
+function orderedTopicPool(topicId) {
+  const pool = state.tasks.filter(task => task.topic_id === topicId);
+  const order = state.topicOrders[topicId];
+  if (!order) return pool;
+  const position = new Map(order.map((guid, index) => [guid, index]));
+  return [...pool].sort((a, b) => (position.get(a.guid) ?? 999999) - (position.get(b.guid) ?? 999999));
+}
+function shuffleActiveTopic() {
+  const topicId = state.activeTopic;
+  state.topicOrders[topicId] = shuffled(state.tasks.filter(task => task.topic_id === topicId).map(task => task.guid));
+  state.page = 1;
+  loadTasks(false);
+}
+function updatePickButton(button) {
+  const selected = state.manualVariantIds.has(button.dataset.taskGuid);
+  button.classList.toggle("selected", selected);
+  button.textContent = selected ? "В варианте" : "В вариант";
+  button.setAttribute("aria-pressed", String(selected));
+}
+function updateManualVariantUi() {
+  const count = state.manualVariantIds.size;
+  $("#manualVariantBar").hidden = count === 0;
+  $("#manualVariantCount").textContent = count;
+  $$("[data-task-guid]").forEach(updatePickButton);
+}
+function toggleManualVariantTask(guid) {
+  if (state.manualVariantIds.has(guid)) state.manualVariantIds.delete(guid);
+  else state.manualVariantIds.add(guid);
+  updateManualVariantUi();
+}
+function clearManualVariant() {
+  state.manualVariantIds.clear();
+  updateManualVariantUi();
+}
+function selectedManualTasks() {
+  const byGuid = new Map(state.tasks.map(task => [task.guid, task]));
+  return [...state.manualVariantIds].map(guid => byGuid.get(guid)).filter(Boolean);
+}
+function groupsFromTasks(tasks) {
+  return state.topics.map(topic => {
+    const items = tasks.filter(task => task.topic_id === topic.id);
+    return items.length ? { topic, items } : null;
+  }).filter(Boolean);
+}
 
 function renderVariantControls() {
   $("#variantCounts").innerHTML = state.topics.map(topic => `
@@ -173,6 +239,19 @@ function updateVariantTotal() {
   $("#variantTotal").textContent = $$("#variantCounts input").reduce((sum, input) => sum + (Number(input.value) || 0), 0);
 }
 
+function renderVariantResult(result) {
+  state.variantGroups = result.groups;
+  $("#variantDialog").close(); $("#variantTaskList").innerHTML = "";
+  $("#variantWarnings").innerHTML = result.warnings.map(item => `<div class="warning">${escapeText(item)}</div>`).join("");
+  let sequence = 1;
+  result.groups.forEach(group => {
+    const heading = document.createElement("h3"); heading.className = "variant-group-title"; heading.textContent = `${topicNumber(group.topic.id)}. ${group.topic.title}`;
+    $("#variantTaskList").append(heading);
+    group.items.forEach(task => $("#variantTaskList").append(makeTaskCard(task, sequence++)));
+  });
+  $("#variantResults").showModal();
+}
+
 async function generateVariant() {
   const button = $("#generateVariant"); button.disabled = true; button.textContent = "Собираем задания…";
   const counts = Object.fromEntries($$("#variantCounts input").map(input => [input.name, Number(input.value) || 0]));
@@ -186,19 +265,15 @@ async function generateVariant() {
       if (pool.length < count) warnings.push(`${topic.title}: доступно ${pool.length} из ${count}`);
       return { topic, items: shuffled.slice(0, count) };
     }).filter(Boolean);
-    const result = { groups, warnings };
-    state.variantGroups = result.groups;
-    $("#variantDialog").close(); $("#variantTaskList").innerHTML = "";
-    $("#variantWarnings").innerHTML = result.warnings.map(item => `<div class="warning">${escapeText(item)}</div>`).join("");
-    let sequence = 1;
-    result.groups.forEach(group => {
-      const heading = document.createElement("h3"); heading.className = "variant-group-title"; heading.textContent = `${topicNumber(group.topic.id)}. ${group.topic.title}`;
-      $("#variantTaskList").append(heading);
-      group.items.forEach(task => $("#variantTaskList").append(makeTaskCard(task, sequence++)));
-    });
-    $("#variantResults").showModal();
+    renderVariantResult({ groups, warnings });
   } catch (error) { alert(error.message); }
   finally { button.disabled = false; button.textContent = "Собрать случайный вариант"; }
+}
+
+function openManualVariant() {
+  const tasks = selectedManualTasks();
+  if (!tasks.length) { alert("Сначала добавьте задания в вариант."); return; }
+  renderVariantResult({ groups: groupsFromTasks(tasks), warnings: [] });
 }
 
 async function init() {
@@ -210,7 +285,7 @@ async function init() {
     $("#taskList").innerHTML = `<div class="error-box">${escapeText(error.message)}. Открывайте страницу через GitHub Pages или локальный HTTP-сервер.</div>`;
     return;
   }
-  renderTopics(); renderVariantControls(); await loadTasks(false);
+  renderTopics(); renderVariantControls(); updateManualVariantUi(); await loadTasks(false);
 }
 
 async function variantDocument({ inlineImages = false } = {}) {
@@ -316,6 +391,9 @@ function enableEmbedMode() {
 $("#searchInput").addEventListener("input", () => { clearTimeout(state.searchTimer); state.searchTimer = setTimeout(() => { state.page = 1; loadTasks(false); }, 350); });
 $("#subtopicSelect").addEventListener("change", () => { state.page = 1; loadTasks(false); });
 $("#loadMore").addEventListener("click", () => { state.page += 1; loadTasks(true); });
+$("#shuffleTopic").addEventListener("click", shuffleActiveTopic);
+$("#openManualVariant").addEventListener("click", openManualVariant);
+$("#clearManualVariant").addEventListener("click", clearManualVariant);
 $$('[data-open-variant]').forEach(button => button.addEventListener("click", () => $("#variantDialog").showModal()));
 $("#generateVariant").addEventListener("click", event => { event.preventDefault(); generateVariant(); });
 $("[data-close-results]").addEventListener("click", () => $("#variantResults").close());
