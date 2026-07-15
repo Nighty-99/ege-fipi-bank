@@ -214,21 +214,53 @@ async function init() {
 }
 
 async function variantDocument({ inlineImages = false } = {}) {
-  const date = new Intl.DateTimeFormat("ru-RU").format(new Date());
   let number = 1;
   const sections = [];
   for (const group of state.variantGroups) {
     const articles = [];
     for (const task of group.items) {
       const condition = inlineImages ? await inlinePromptImages(task.prompt) : absolutizePromptImages(task.prompt);
-      articles.push(`<article><div class="meta">Задание ${number++} · ФИПИ № ${escapeText(task.number)} · ${escapeText(task.subtopic)}</div><div class="condition">${condition}</div><div class="answer">Ответ: __________________________________</div><div class="source">Источник: открытый банк заданий ФГБНУ «ФИПИ» · <a href="${task.source_url}">первоисточник</a></div></article>`);
+      articles.push(`<article><div class="meta">Задание ${number++} · ФИПИ № ${escapeText(task.number)} · ${escapeText(task.subtopic)}</div><div class="condition">${condition}</div><div class="answer">Ответ: __________________________________</div></article>`);
     }
     sections.push(`<section><h2>${topicNumber(group.topic.id)}. ${escapeText(group.topic.title)}</h2>${articles.join("")}</section>`);
   }
   const tasks = sections.join("");
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Вариант ЕГЭ — Infinita</title><style>
-    @page{size:A4;margin:17mm}*{box-sizing:border-box}body{max-width:900px;margin:0 auto;color:#120001;font:15px/1.55 Arial,sans-serif}header{padding:0 0 25px;border-bottom:2px solid #cf294b}h1{margin:0;font:700 38px Georgia,serif}header p,.meta,.source{color:#756b68}.brand{color:#cf294b}h2{margin:34px 0 12px;color:#300104;font:700 24px Georgia,serif}article{padding:20px 0;border-top:1px solid #ddd;break-inside:avoid}.meta{margin-bottom:12px;font-size:11px}.condition{font-size:16px}.condition img{max-width:100%;height:auto}.condition img.fipi-inline-image{display:inline-block;width:auto;max-width:min(100%,16em);margin:0 .12em;vertical-align:-.35em}.condition img.fipi-block-image,.condition img.task-image:not(.fipi-inline-image){display:block;max-width:100%;height:auto;margin:12px auto}.condition table{max-width:100%!important}.answer{margin-top:24px}.source{margin-top:18px;font-size:9px}.source a{color:#cf294b}@media print{a{color:inherit;text-decoration:none}}
-  </style></head><body><header><h1><span class="brand">∞</span> Infinita · вариант ЕГЭ</h1><p>Профильная математика · составлен ${date}</p></header>${tasks}<footer><p>Материалы заданий получены из открытого банка ФГБНУ «ФИПИ». Infinita не является официальным ресурсом ФИПИ.</p></footer></body></html>`;
+    @page{size:A4;margin:16mm}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{min-height:265mm;color:#120001;font:14px/1.45 Arial,sans-serif;overflow-wrap:normal;word-break:normal;hyphens:none}
+    .page{min-height:265mm;display:flex;flex-direction:column}
+    header{padding:0 0 12px;border-bottom:1.5px solid #cf294b}
+    h1{margin:0;color:#120001;font:700 28px/1.15 Georgia,serif}
+    .brand{color:#cf294b}
+    main{flex:1 0 auto}
+    h2{margin:18px 0 8px;color:#300104;font:700 18px/1.2 Georgia,serif;break-after:avoid}
+    article{padding:13px 0 16px;border-top:1px solid #ddd;break-inside:auto;page-break-inside:auto}
+    article:first-of-type{border-top:0}
+    .meta{margin-bottom:8px;color:#756b68;font-size:10px;line-height:1.35}
+    .condition{font-size:14.5px;line-height:1.5;overflow-wrap:normal;word-break:normal;hyphens:none}
+    .condition p{margin:0 0 7px}
+    .condition br{line-height:1.2}
+    .condition img{max-width:100%;height:auto}
+    .condition img.fipi-inline-image{display:inline-block;width:auto;max-width:min(100%,16em);margin:0 .1em;vertical-align:-.32em}
+    .condition img.fipi-block-image,.condition img.task-image:not(.fipi-inline-image){display:block;max-width:92%;height:auto;margin:8px auto}
+    .condition table,.condition tbody,.condition tr,.condition td{display:block!important;width:100%!important;max-width:100%!important}
+    .condition table{border-collapse:collapse!important;table-layout:auto!important}
+    .condition td{padding:0!important;vertical-align:top!important}
+    .condition math{font-size:1em}
+    .answer{margin-top:14px}
+    footer{flex:0 0 auto;margin-top:auto;padding-top:10mm;color:#756b68;font-size:9px;line-height:1.35;text-align:left}
+    footer p{margin:0}
+    @media print{a{color:inherit;text-decoration:none}button{display:none!important}}
+  </style></head><body><div class="page"><header><h1><span class="brand">∞</span> Infinita · вариант ЕГЭ</h1></header><main>${tasks}</main><footer><p>Материалы заданий получены из открытого банка ФГБНУ «ФИПИ»</p></footer></div><script>
+  (function(){
+    function pxPerMm(){var d=document.createElement('div');d.style.width='100mm';d.style.position='absolute';d.style.visibility='hidden';document.body.appendChild(d);var v=d.offsetWidth/100;d.remove();return v||3.78}
+    function placeFooter(){var footer=document.querySelector('footer');if(!footer)return;footer.style.marginTop='0';var pageHeight=265*pxPerMm();var top=footer.offsetTop;var h=footer.offsetHeight;var used=top%pageHeight;var gap=pageHeight-used-h;if(gap>8&&gap<pageHeight)footer.style.marginTop=gap+'px'}
+    window.addEventListener('load',function(){setTimeout(placeFooter,150)});
+    window.addEventListener('beforeprint',placeFooter);
+  }());
+  </script></body></html>`;
 }
 
 async function downloadVariant() {
@@ -258,7 +290,7 @@ async function printVariant() {
   if (!popup) { alert("Разрешите всплывающие окна, чтобы открыть печатную версию."); return; }
   button.disabled = true; button.textContent = "Готовим PDF…";
   popup.document.open();
-  popup.document.write('<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Готовим вариант…</title></head><body style="font:16px Arial,sans-serif;padding:30px">Готовим вариант и встраиваем изображения…</body></html>');
+  popup.document.write('<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>Вариант ЕГЭ — Infinita</title></head><body style="font:16px Arial,sans-serif;padding:30px">Готовим вариант и встраиваем изображения…</body></html>');
   popup.document.close();
   try {
     const html = await variantDocument({ inlineImages: true });
