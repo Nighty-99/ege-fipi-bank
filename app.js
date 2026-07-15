@@ -220,7 +220,7 @@ async function variantDocument({ inlineImages = false } = {}) {
     const articles = [];
     for (const task of group.items) {
       const condition = inlineImages ? await inlinePromptImages(task.prompt) : absolutizePromptImages(task.prompt);
-      articles.push(`<article><div class="meta">Задание ${number++} · ФИПИ № ${escapeText(task.number)} · ${escapeText(task.subtopic)}</div><div class="condition">${condition}</div><div class="answer">Ответ: __________________________________</div></article>`);
+      articles.push(`<article><div class="meta">Задание ${number++}</div><div class="condition">${condition}</div><div class="answer">Ответ: __________________________________</div></article>`);
     }
     sections.push(`<section><h2>${topicNumber(group.topic.id)}. ${escapeText(group.topic.title)}</h2>${articles.join("")}</section>`);
   }
