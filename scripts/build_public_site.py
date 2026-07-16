@@ -28,6 +28,7 @@ FILES = [
     "taxonomy.js",
     "taxonomy.css",
     "tilda-embed-snippet.html",
+    "LEGAL_NOTICE.md",
 ]
 
 DIRECTORIES = [
@@ -65,16 +66,6 @@ def copy_directory(relative_path: str, output: Path) -> None:
         raise FileNotFoundError(f"Required directory is missing: {relative_path}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source, destination)
-
-
-def write_public_readme(output: Path) -> None:
-    readme = output / "README.md"
-    readme.write_text(
-        "# Банк заданий ЕГЭ ФИПИ — Infinita\n\n"
-        "Это публичная статическая сборка для GitHub Pages и встраивания в Tilda.\n\n"
-        "Материалы заданий получены из открытого банка ФГБНУ «ФИПИ».\n",
-        encoding="utf-8",
-    )
 
 
 def write_cname(output: Path, domain: str | None) -> None:
@@ -115,7 +106,6 @@ def main() -> None:
     for relative_path in DIRECTORIES:
         copy_directory(relative_path, output)
 
-    write_public_readme(output)
     write_cname(output, args.cname)
 
     print(f"Public site bundle is ready: {output}")
