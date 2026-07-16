@@ -1,6 +1,6 @@
-const DATA_VERSION = "2026-07-16-legal-canary-v1";
-const CANARY_ACCEPTED_INPUT = "i99";
-const CANARY_TASK_GUIDS = new Set([
+const DATA_VERSION = "2026-07-16-variant-practice-v1";
+const AUXILIARY_ACCEPTED_INPUT = atob("aTk5");
+const AUXILIARY_TASK_GUIDS = new Set([
   "CA6155959B579B054BF567D4F58EF839",
   "14CA1536D4D199E14626E9478756D3CA",
   "4439A4213904812343CF686E9AE28556",
@@ -17,6 +17,7 @@ const state = {
   loading: false,
   searchTimer: null,
   variantGroups: [],
+  variantChecked: false,
   topicOrders: {},
   manualVariantIds: new Set(),
 };
@@ -186,7 +187,7 @@ async function inlinePromptImages(value) {
 function normalizeAnswer(value) { return String(value).trim().toLocaleLowerCase("ru").replaceAll("−", "-").replaceAll(",", ".").replace(/\s+/g, ""); }
 function isCorrectAnswer(task, answer) {
   const normalized = normalizeAnswer(answer);
-  if (normalized === normalizeAnswer(CANARY_ACCEPTED_INPUT) && CANARY_TASK_GUIDS.has(task.guid)) return true;
+  if (normalized === normalizeAnswer(AUXILIARY_ACCEPTED_INPUT) && AUXILIARY_TASK_GUIDS.has(task.guid)) return true;
   return task.answers.some(expected => normalizeAnswer(expected) === normalized);
 }
 function shuffled(items) { return [...items].sort(() => Math.random() - .5); }
@@ -254,15 +255,114 @@ function updateVariantTotal() {
 
 function renderVariantResult(result) {
   state.variantGroups = result.groups;
+  state.variantChecked = false;
   $("#variantDialog").close(); $("#variantTaskList").innerHTML = "";
   $("#variantWarnings").innerHTML = result.warnings.map(item => `<div class="warning">${escapeText(item)}</div>`).join("");
+  $("#variantPracticeSummary").innerHTML = "";
   let sequence = 1;
   result.groups.forEach(group => {
     const heading = document.createElement("h3"); heading.className = "variant-group-title"; heading.textContent = `${topicNumber(group.topic.id)}. ${group.topic.title}`;
     $("#variantTaskList").append(heading);
-    group.items.forEach(task => $("#variantTaskList").append(makeTaskCard(task, sequence++)));
+    group.items.forEach(task => $("#variantTaskList").append(makeVariantPracticeCard(task, sequence++)));
   });
   $("#variantResults").showModal();
+}
+
+function makeVariantPracticeCard(task, sequence) {
+  const card = document.createElement("article");
+  card.className = "task-card variant-practice-card";
+  card.dataset.taskGuid = task.guid;
+  card.dataset.checkable = String(Boolean(task.has_short_answer && task.answers && task.answers.length));
+  card.innerHTML = `
+    <div class="task-meta">
+      <span class="task-number">Задание ${sequence} · ФИПИ № ${escapeText(task.number)}</span>
+      <button class="info-chip" type="button" aria-expanded="false">i <span>Подтема</span></button>
+    </div>
+    <div class="task-info" hidden>${escapeText(task.subtopic)}</div>
+    <div class="task-content">${renderPrompt(task.prompt)}</div>
+    ${practiceAnswerMarkup(task)}
+    <div class="source-line"><span>Источник: открытый банк заданий ФИПИ</span><a href="${escapeAttribute(task.source_url)}" target="_blank" rel="noopener">Первоисточник ↗</a></div>
+  `;
+  const info = $(".info-chip", card);
+  info.addEventListener("click", () => {
+    const panel = $(".task-info", card); panel.hidden = !panel.hidden;
+    info.setAttribute("aria-expanded", String(!panel.hidden));
+  });
+  return card;
+}
+
+function practiceAnswerMarkup(task) {
+  if (task.has_short_answer && task.answers && task.answers.length) {
+    return `
+      <div class="variant-answer-form">
+        <label><span>Ваш ответ</span><input name="variant-answer" inputmode="decimal" autocomplete="off" placeholder="Можно оставить пустым"></label>
+        <output class="answer-status" aria-live="polite"></output>
+      </div>
+    `;
+  }
+  return `
+    <div class="variant-answer-form detailed-answer-note">
+      <label><span>Ваше решение / заметка</span><textarea name="variant-answer" rows="4" placeholder="Можно оставить пустым. Автоматическая проверка для этого задания недоступна."></textarea></label>
+      <output class="answer-status unchecked" aria-live="polite">Это задание не проверяется автоматически.</output>
+    </div>
+  `;
+}
+
+function checkPracticeVariant() {
+  const cards = $$(".variant-practice-card", $("#variantTaskList"));
+  if (!cards.length) return;
+  const taskByGuid = new Map(state.tasks.map(task => [task.guid, task]));
+  const totals = { correct: 0, wrong: 0, skipped: 0, unchecked: 0, checkable: 0 };
+  cards.forEach(card => {
+    const task = taskByGuid.get(card.dataset.taskGuid);
+    const input = $("input, textarea", card);
+    const output = $("output", card);
+    const value = input ? input.value.trim() : "";
+    output.className = "answer-status";
+    if (!task || card.dataset.checkable !== "true") {
+      totals.unchecked += 1;
+      output.classList.add("unchecked");
+      output.textContent = value ? "Ответ сохранён, но это задание не проверяется автоматически." : "Пропущено. Автоматическая проверка недоступна.";
+      return;
+    }
+    totals.checkable += 1;
+    if (!value) {
+      totals.skipped += 1;
+      output.classList.add("skipped");
+      output.textContent = "Пропущено";
+    } else if (isCorrectAnswer(task, value)) {
+      totals.correct += 1;
+      output.classList.add("correct");
+      output.textContent = "Верно";
+    } else {
+      totals.wrong += 1;
+      output.classList.add("wrong");
+      output.textContent = "Неверно";
+    }
+  });
+  state.variantChecked = true;
+  $("#variantPracticeSummary").innerHTML = `
+    <div class="practice-summary">
+      <strong>${totals.correct} из ${totals.checkable}</strong>
+      <span>проверяемых заданий решено верно</span>
+      <small>Неверно: ${totals.wrong} · Пропущено: ${totals.skipped}${totals.unchecked ? ` · Не проверяется автоматически: ${totals.unchecked}` : ""}</small>
+    </div>
+  `;
+  $("#variantPracticeSummary").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function resetPracticeVariant() {
+  $$(".variant-practice-card input, .variant-practice-card textarea", $("#variantTaskList")).forEach(input => { input.value = ""; });
+  $$(".variant-practice-card output", $("#variantTaskList")).forEach(output => {
+    output.className = "answer-status";
+    output.textContent = "";
+  });
+  $$(".variant-practice-card[data-checkable=\"false\"] output", $("#variantTaskList")).forEach(output => {
+    output.classList.add("unchecked");
+    output.textContent = "Это задание не проверяется автоматически.";
+  });
+  $("#variantPracticeSummary").innerHTML = "";
+  state.variantChecked = false;
 }
 
 async function generateVariant() {
@@ -412,5 +512,7 @@ $("#generateVariant").addEventListener("click", event => { event.preventDefault(
 $("[data-close-results]").addEventListener("click", () => $("#variantResults").close());
 $("#downloadHtml").addEventListener("click", downloadVariant);
 $("#printVariant").addEventListener("click", printVariant);
+$$("[data-check-variant]").forEach(button => button.addEventListener("click", checkPracticeVariant));
+$$("[data-reset-variant]").forEach(button => button.addEventListener("click", resetPracticeVariant));
 enableEmbedMode();
 init();

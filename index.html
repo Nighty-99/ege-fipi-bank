@@ -94,8 +94,18 @@
   <dialog class="variant-results" id="variantResults">
     <div class="results-card">
       <div class="dialog-head"><div><p class="eyebrow">Готово</p><h2>Ваш вариант</h2></div><button class="close-button" data-close-results aria-label="Закрыть">×</button></div>
-      <div class="export-actions"><button class="button button-primary" id="downloadHtml">Скачать HTML</button><button class="button print-button" id="printVariant">Печать / PDF</button></div>
-      <div id="variantWarnings"></div><div id="variantTaskList"></div>
+      <p class="dialog-intro">Решайте задания прямо здесь. Ответы можно оставлять пустыми — они будут засчитаны как пропущенные. Проверка появится только после нажатия итоговой кнопки.</p>
+      <div class="export-actions">
+        <button class="button button-primary" data-check-variant type="button">Завершить и проверить</button>
+        <button class="button print-button" data-reset-variant type="button">Очистить ответы</button>
+        <button class="button print-button" id="downloadHtml" type="button">Скачать HTML</button>
+        <button class="button print-button" id="printVariant" type="button">Печать / PDF</button>
+      </div>
+      <div id="variantWarnings"></div><div id="variantPracticeSummary"></div><div id="variantTaskList"></div>
+      <div class="variant-bottom-actions">
+        <button class="button button-primary" data-check-variant type="button">Завершить и проверить</button>
+        <button class="button print-button" data-reset-variant type="button">Очистить ответы</button>
+      </div>
     </div>
   </dialog>
 
