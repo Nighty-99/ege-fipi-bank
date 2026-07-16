@@ -155,6 +155,11 @@ dialog::backdrop { background: rgba(18,0,1,.76); }
 .dialog-head h2 { font-size: 54px; }
 .close-button { width: 44px; height: 44px; color: var(--ink); background: transparent; border: 1px solid var(--line); font-size: 27px; cursor: pointer; }
 .dialog-intro { color: var(--muted); line-height: 1.6; }
+.preset-variants { margin-top: 28px; padding: 20px; background: #fff8ef; border: 1px solid rgba(210,156,90,.45); }
+.preset-variants h3 { margin: 2px 0 16px; color: var(--wine); font: 600 28px/1 var(--display); }
+.preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.preset-button { min-height: 42px; padding: 10px 12px; color: var(--wine); background: rgba(255,255,255,.72); border: 1px solid var(--line); cursor: pointer; font-weight: 700; }
+.preset-button:hover { color: white; background: var(--red); border-color: var(--red); }
 .variant-counts { margin: 34px 0; border-top: 1px solid var(--line); }
 .count-row { min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
 .count-row label { display: flex; align-items: center; gap: 14px; }
@@ -207,4 +212,5 @@ dialog::backdrop { background: rgba(18,0,1,.76); }
   .manual-variant-bar { align-items: flex-start; flex-direction: column; }.task-meta { align-items: flex-start; flex-wrap: wrap; }.manual-pick { width: 100%; margin-left: 0; }
   .task-card { padding: 22px 18px; }.task-content { font-size: 15px; }.answer-form, .variant-answer-form { grid-template-columns: 1fr; }.answer-status { min-height: 42px; }
   .source-line { flex-direction: column; }.dialog-card, .results-card { padding: 35px 20px; }.dialog-head h2 { font-size: 42px; }
+  .preset-grid { grid-template-columns: repeat(2, 1fr); }
 }

@@ -1,4 +1,5 @@
 const DATA_VERSION = "2026-07-16-variant-practice-v1";
+const BUILT_IN_FIRST_PART_VARIANTS = 12;
 const AUXILIARY_ACCEPTED_INPUT = atob("aTk5");
 const AUXILIARY_TASK_GUIDS = new Set([
   "CA6155959B579B054BF567D4F58EF839",
@@ -237,6 +238,12 @@ function groupsFromTasks(tasks) {
 }
 
 function renderVariantControls() {
+  $("#presetVariants").innerHTML = Array.from({ length: BUILT_IN_FIRST_PART_VARIANTS }, (_, index) => `
+    <button type="button" class="preset-button" data-preset-variant="${index + 1}">Вариант ${index + 1}</button>
+  `).join("");
+  $$("[data-preset-variant]", $("#presetVariants")).forEach(button => {
+    button.addEventListener("click", () => openBuiltInFirstPartVariant(Number(button.dataset.presetVariant)));
+  });
   $("#variantCounts").innerHTML = state.topics.map(topic => `
     <div class="count-row"><label><small>${topicNumber(topic.id)}</small><span>${topic.title}</span></label>
       <div class="stepper"><button type="button" data-step="-1">−</button><input type="number" name="${topic.id}" min="0" max="20" value="${topic.id <= 12 ? 1 : 0}" aria-label="Количество: ${topic.title}"><button type="button" data-step="1">+</button></div>
@@ -295,14 +302,14 @@ function practiceAnswerMarkup(task) {
   if (task.has_short_answer && task.answers && task.answers.length) {
     return `
       <div class="variant-answer-form">
-        <label><span>Ваш ответ</span><input name="variant-answer" inputmode="decimal" autocomplete="off" placeholder="Можно оставить пустым"></label>
+        <label><span>Ваш ответ</span><input name="variant-answer" inputmode="decimal" autocomplete="off" placeholder="Введите ответ"></label>
         <output class="answer-status" aria-live="polite"></output>
       </div>
     `;
   }
   return `
     <div class="variant-answer-form detailed-answer-note">
-      <label><span>Ваше решение / заметка</span><textarea name="variant-answer" rows="4" placeholder="Можно оставить пустым. Автоматическая проверка для этого задания недоступна."></textarea></label>
+      <label><span>Ваше решение / заметка</span><textarea name="variant-answer" rows="4" placeholder="Ваше решение"></textarea></label>
       <output class="answer-status unchecked" aria-live="polite">Это задание не проверяется автоматически.</output>
     </div>
   `;
@@ -385,6 +392,34 @@ function resetPracticeVariant() {
   });
   $("#variantPracticeSummary").innerHTML = "";
   state.variantChecked = false;
+}
+
+function builtInFirstPartPool(topicId) {
+  return state.tasks
+    .filter(task => task.topic_id === topicId && task.has_short_answer && task.answers && task.answers.length)
+    .sort((a, b) => stableTaskRank(a.guid).localeCompare(stableTaskRank(b.guid)) || a.number.localeCompare(b.number));
+}
+
+function stableTaskRank(value) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return String(hash >>> 0).padStart(10, "0");
+}
+
+function openBuiltInFirstPartVariant(variantNumber) {
+  const index = Math.max(1, Math.min(BUILT_IN_FIRST_PART_VARIANTS, variantNumber)) - 1;
+  const groups = state.topics
+    .filter(topic => topic.id <= 12)
+    .map(topic => {
+      const pool = builtInFirstPartPool(topic.id);
+      if (!pool.length) return null;
+      return { topic, items: [pool[index % pool.length]] };
+    })
+    .filter(Boolean);
+  renderVariantResult({ groups, warnings: [] });
 }
 
 async function generateVariant() {

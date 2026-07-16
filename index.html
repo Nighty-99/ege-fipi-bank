@@ -85,6 +85,10 @@
     <form method="dialog" class="dialog-card" id="variantForm">
       <div class="dialog-head"><div><p class="eyebrow">Конструктор</p><h2>Случайный вариант</h2></div><button class="close-button" value="cancel" aria-label="Закрыть">×</button></div>
       <p class="dialog-intro">Укажите, сколько заданий взять из каждой темы. Ноль — пропустить тему. Если хотите собрать вариант вручную, добавляйте конкретные задания кнопкой «В вариант» прямо в банке.</p>
+      <div class="preset-variants">
+        <div><p class="eyebrow">Готовые варианты</p><h3>Первая часть</h3></div>
+        <div class="preset-grid" id="presetVariants"></div>
+      </div>
       <div class="variant-counts" id="variantCounts"></div>
       <div class="variant-total"><span>Всего заданий</span><strong id="variantTotal">12</strong></div>
       <button class="button button-primary wide" id="generateVariant" value="none">Собрать случайный вариант</button>
