@@ -313,39 +313,61 @@ function checkPracticeVariant() {
   if (!cards.length) return;
   const taskByGuid = new Map(state.tasks.map(task => [task.guid, task]));
   const totals = { correct: 0, wrong: 0, skipped: 0, unchecked: 0, checkable: 0 };
-  cards.forEach(card => {
+  const rows = [];
+  cards.forEach((card, index) => {
     const task = taskByGuid.get(card.dataset.taskGuid);
     const input = $("input, textarea", card);
     const output = $("output", card);
     const value = input ? input.value.trim() : "";
     output.className = "answer-status";
+    let status = "";
+    let statusClass = "";
     if (!task || card.dataset.checkable !== "true") {
       totals.unchecked += 1;
-      output.classList.add("unchecked");
+      status = value ? "Не проверяется" : "Пропущено";
+      statusClass = value ? "unchecked" : "skipped";
+      output.classList.add(statusClass);
       output.textContent = value ? "Ответ сохранён, но это задание не проверяется автоматически." : "Пропущено. Автоматическая проверка недоступна.";
+      rows.push({ number: index + 1, topic: task ? topicNumber(task.topic_id) : "—", status, statusClass });
       return;
     }
     totals.checkable += 1;
     if (!value) {
       totals.skipped += 1;
-      output.classList.add("skipped");
+      status = "Пропущено";
+      statusClass = "skipped";
+      output.classList.add(statusClass);
       output.textContent = "Пропущено";
     } else if (isCorrectAnswer(task, value)) {
       totals.correct += 1;
-      output.classList.add("correct");
+      status = "Верно";
+      statusClass = "correct";
+      output.classList.add(statusClass);
       output.textContent = "Верно";
     } else {
       totals.wrong += 1;
-      output.classList.add("wrong");
+      status = "Неверно";
+      statusClass = "wrong";
+      output.classList.add(statusClass);
       output.textContent = "Неверно";
     }
+    rows.push({ number: index + 1, topic: topicNumber(task.topic_id), status, statusClass });
   });
   state.variantChecked = true;
   $("#variantPracticeSummary").innerHTML = `
     <div class="practice-summary">
-      <strong>${totals.correct} из ${totals.checkable}</strong>
-      <span>проверяемых заданий решено верно</span>
-      <small>Неверно: ${totals.wrong} · Пропущено: ${totals.skipped}${totals.unchecked ? ` · Не проверяется автоматически: ${totals.unchecked}` : ""}</small>
+      <div class="practice-summary-head">
+        <div><strong>${totals.correct} из ${totals.checkable}</strong><span>проверяемых заданий решено верно</span></div>
+        <small>Неверно: ${totals.wrong} · Пропущено: ${totals.skipped}${totals.unchecked ? ` · Не проверяется автоматически: ${totals.unchecked}` : ""}</small>
+      </div>
+      <div class="practice-result-table-wrap">
+        <table class="practice-result-table">
+          <thead><tr><th>Задание</th><th>Тема</th><th>Статус</th></tr></thead>
+          <tbody>
+            ${rows.map(row => `<tr class="${row.statusClass}"><td>${row.number}</td><td>${row.topic}</td><td>${row.status}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
     </div>
   `;
   $("#variantPracticeSummary").scrollIntoView({ behavior: "smooth", block: "nearest" });
