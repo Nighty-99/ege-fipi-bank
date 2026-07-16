@@ -28,6 +28,68 @@
 
 ## Публикация на GitHub Pages
 
+### Рекомендуемая схема: рабочий репозиторий + публичный репозиторий
+
+Чтобы не выкладывать в открытый доступ рабочие скрипты, черновики и служебные файлы, удобнее держать два репозитория:
+
+- рабочий репозиторий — приватный, в нём лежит вся “мастерская”: скрипты обновления, проверки, черновики, вспомогательные файлы;
+- публичный репозиторий — открытый, в нём лежит только готовая статическая страница для GitHub Pages.
+
+Собрать чистую публичную версию можно командой:
+
+```powershell
+python scripts\build_public_site.py
+```
+
+По умолчанию файлы будут собраны в папку `public-site/`. Если публичный репозиторий лежит в другой папке, укажите путь явно:
+
+```powershell
+python scripts\build_public_site.py --output "C:\Users\Aidar\Desktop\ege-fipi-bank-public"
+```
+
+Если для GitHub Pages будет использоваться свой поддомен, например `bank.infinita-school.ru`, можно сразу добавить файл `CNAME`:
+
+```powershell
+python scripts\build_public_site.py --output "C:\Users\Aidar\Desktop\ege-fipi-bank-public" --cname bank.infinita-school.ru
+```
+
+В публичную сборку попадут только:
+
+```text
+index.html
+app.js
+styles.css
+taxonomy.html
+taxonomy.js
+taxonomy.css
+data/
+assets/fipi-images/
+.nojekyll
+tilda-embed-snippet.html
+README.md
+```
+
+После сборки перейдите в папку публичного репозитория и опубликуйте изменения:
+
+```powershell
+cd "C:\Users\Aidar\Desktop\ege-fipi-bank-public"
+git add .
+git commit -m "Update public FIPI bank"
+git push origin main
+```
+
+Если используете папку `public-site/` внутри рабочего проекта как отдельный репозиторий, её нужно один раз инициализировать отдельно:
+
+```powershell
+cd public-site
+git init
+git branch -M main
+git remote add origin https://github.com/Nighty-99/ege-fipi-bank-public.git
+git add .
+git commit -m "Initial public site"
+git push -u origin main
+```
+
 В репозиторий должны попасть минимум:
 
 ```text

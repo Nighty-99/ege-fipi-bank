@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.env
+
+# Local/public build output. The folder may contain a separate Git repository.
+public-site/
+
+# Working analysis artifacts; not required for the public GitHub Pages site.
+remaining_images/
+remaining_images_white/
+topic12_sheets/
+topic_images_current/
+topic_images_current_sheets/
+missing_planimetry_fragments.png
